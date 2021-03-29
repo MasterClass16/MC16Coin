@@ -7,26 +7,48 @@ pragma solidity ^0.7.6;
 
 import "https://raw.githubusercontent.com/smartcontractkit/chainlink/develop/evm-contracts/src/v0.6/ChainlinkClient.sol";
 
-contract AlarmClockSample is ChainlinkClient {
+
+import "./RebaseToken.sol";
+import "./PriceConsumerV3.sol";
+
+contract TriggerRebase is ChainlinkClient {
   
     bool public alarmDone;
-    
+    RebaseToken public rebaseC;
+    PriceConsumerV3 public priceConsumerV3;
     address private oracle;
     bytes32 private jobId;
     uint256 private fee;
-    
+    uint32 public defaultDuration;
     /**
-     * Network: Rinkeby
-     * Oracle: Chainlink - 0x7AFe1118Ea78C1eae84ca8feE5C65Bc76CcF879e
-     * Job ID: Chainlink - 4fff47c3982b4babba6a7dd694c9b204
+     * Network: Kovan
+     * Oracle: Chainlink - 0xAA1DC356dc4B18f30C347798FD5379F3D77ABC5b
+     * Job ID: Chainlink - 982105d690504c5d9ce374d040c08654
      * Fee: 0.1 LINK
      */
     constructor() public {
         setPublicChainlinkToken();
-        oracle = 0x7AFe1118Ea78C1eae84ca8feE5C65Bc76CcF879e;
-        jobId = "4fff47c3982b4babba6a7dd694c9b204";
+        oracle = 0xAA1DC356dc4B18f30C347798FD5379F3D77ABC5b;
+        jobId = "982105d690504c5d9ce374d040c08654";
         fee = 0.1 * 10 ** 18; // 0.1 LINK
         alarmDone = false;
+        defaultDuration = 60 * 60 * 24;
+    }
+    
+    
+    modifier onlyOwner() {
+        require(msg.sender == owner_,"Only the owner of the contract can use");
+        _;
+    }
+    
+    
+    function setRebaseC(RebaseToken addr) public onlyOwner {
+        rebaseC = addr;
+    }
+    
+    
+    function setPriceConsumerV3(PriceConsumerV3 addr) public onlyOwner {
+        priceConsumerV3 = addr;
     }
     
     /**
@@ -47,6 +69,9 @@ contract AlarmClockSample is ChainlinkClient {
      */ 
     function fulfillAlarm(bytes32 _requestId, uint256 _volume) public recordChainlinkFulfillment(_requestId)
     {
+        int supplyDelta = priceConsumerV3.getLatestPrice();
+        rebaseC.rebase(block.timestamp, supplyDelta);
+        requestAlarmClock(defaultDuration);
         alarmDone = true;
     }
     
