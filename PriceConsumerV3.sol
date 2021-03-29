@@ -2,7 +2,7 @@ pragma solidity ^0.7.6;
 
 import "https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
 
-contract PriceConsumerBSCV3 {
+contract PriceConsumerV3 {
 
     AggregatorV3Interface internal priceFeed;
 
