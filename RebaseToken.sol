@@ -4,10 +4,11 @@ import "./SafeMath.sol";
 import "./SafeMathInt.sol";
 
 contract RebaseToken {
-    string public name = "Rebase Token";
-    string public symbol = "RT";
+    string public name = "ALPHONE";
+    string public symbol = "ALP";
     address owner_;
-
+    address private monetaryPolicy;
+    
     using SafeMath for uint256;
     using SafeMathInt for int256;
 
@@ -35,12 +36,21 @@ contract RebaseToken {
     mapping(address => mapping(address => uint256)) private _allowedFragments;
 
     modifier onlyOwner() {
-        require(msg.sender == owner_,"It's not use by owner.");
+        require(msg.sender == owner_,"Only the owner of the contract can use");
+        _;
+    }
+    
+    modifier onlyMonetaryPolicy() {
+        require(msg.sender == monetaryPolicy, "Only MonetaryPolicy can use");
         _;
     }
 
     constructor() public  {
         owner_ = msg.sender;
+    }
+
+    function setMonetaryPolicy(address addr) external onlyOwner {
+        monetaryPolicy = addr;
     }
 
     function initialize() public onlyOwner {
@@ -54,7 +64,7 @@ contract RebaseToken {
 
     function rebase(uint256 epoch, int256 supplyDelta)
             external
-            onlyOwner
+            onlyMonetaryPolicy
             returns (uint256)
         {
             if (supplyDelta == 0) {
