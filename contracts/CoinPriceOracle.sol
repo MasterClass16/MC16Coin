@@ -1,6 +1,7 @@
-pragma solidity ^0.7.6;
+pragma solidity ^0.6.8;
+// SPDX-License-Identifier: MIT
 
-import "https://raw.githubusercontent.com/smartcontractkit/chainlink/master/evm-contracts/src/v0.6/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
 import "./RebaseToken.sol";
 
 
@@ -8,6 +9,7 @@ contract CoinPriceOracle is ChainlinkClient {
   
     uint256 public price;
     
+    address owner_;
     address private oracle;
     bytes32 private jobId;
     uint256 private fee;
@@ -15,15 +17,16 @@ contract CoinPriceOracle is ChainlinkClient {
 
 
     /**
-     * Network: Kovan
-     * Chainlink - 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e
-     * Chainlink - 29fa9aa13bf1468788b7cc4a500a45b8
+     * Network: Binance Smart Chain Testnet
+     * Oracle: Chainlink - 0x3b3D60B4a33B8B8c7798F7B3E8964b76FBE1E176
+     * Job ID: Chainlink - 76bea30a605846cea6af93dbae70ed39
      * Fee: 0.1 LINK
      */
     constructor() public {
+        owner_ = msg.sender;
         setPublicChainlinkToken();
-        oracle = 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e;
-        jobId = "29fa9aa13bf1468788b7cc4a500a45b8";
+        oracle = 0x3b3D60B4a33B8B8c7798F7B3E8964b76FBE1E176;
+        jobId = "76bea30a605846cea6af93dbae70ed39";
         fee = 0.1 * 10 ** 18; // 0.1 LINK
         defaultDuration = 60 * 60 * 24;
     }
@@ -32,14 +35,6 @@ contract CoinPriceOracle is ChainlinkClient {
     modifier onlyOwner() {
         require(msg.sender == owner_,"Only the owner of the contract can use");
         _;
-    }
-    
-    function triggerRebase() external {
-        rebaseC.rebase(block.timestamp, supplyDelta); 
-    }
-
-    function setRebaseC(RebaseToken addr) external onlyOwner {
-        rebaseC = addr;
     }
 
     function requestPriceData() external returns (bytes32 requestId) 

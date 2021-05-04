@@ -1,4 +1,5 @@
-pragma solidity ^0.7.6;
+pragma solidity ^0.6.8;
+// SPDX-License-Identifier: MIT
 
 /**
  * @title SafeMathInt

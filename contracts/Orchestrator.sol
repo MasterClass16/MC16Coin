@@ -3,16 +3,17 @@
  *     - BSC LINK faucet: https://linkfaucet.protofire.io/bsctest
  */
 
-pragma solidity ^0.7.6;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.6.8;
 
-import "https://raw.githubusercontent.com/smartcontractkit/chainlink/develop/evm-contracts/src/v0.6/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
 
 interface IMonetaryPolicy {
-   function triggerRebase() external 
+   function triggerRebase() external;
 }
 
 interface ICoinPriceOracle {
-   function requestPriceData() external returns (bytes32 requestId)  
+   function requestPriceData() external returns (bytes32 requestId);  
 }
 
 contract Orchestrator is ChainlinkClient {
@@ -28,16 +29,16 @@ contract Orchestrator is ChainlinkClient {
     uint256 public lastRebaseTimestampSec;
 
     /**
-     * Network: Kovan
-     * Oracle: Chainlink - 0xAA1DC356dc4B18f30C347798FD5379F3D77ABC5b
-     * Job ID: Chainlink - 982105d690504c5d9ce374d040c08654
+     * Network: Binance Smart Chain Testnet
+     * Oracle: Chainlink - 0x3b3D60B4a33B8B8c7798F7B3E8964b76FBE1E176
+     * Job ID: Chainlink - 76bea30a605846cea6af93dbae70ed39
      * Fee: 0.1 LINK
      */
     constructor() public {
         owner_ = msg.sender;
         setPublicChainlinkToken();
-        oracle = 0xAA1DC356dc4B18f30C347798FD5379F3D77ABC5b;
-        jobId = "982105d690504c5d9ce374d040c08654";
+        oracle = 0x3b3D60B4a33B8B8c7798F7B3E8964b76FBE1E176;
+        jobId = "76bea30a605846cea6af93dbae70ed39";
         fee = 0.1 * 10 ** 18; // 0.1 LINK
         defaultDuration = 60 * 60 * 24;
         defaultCoinPriceLead = 60 * 5;
@@ -66,7 +67,7 @@ contract Orchestrator is ChainlinkClient {
     
     function initialRebaseRequest(uint256 durationInSeconds) external onlyOwner returns (bytes32 requestId) 
     {
-        Chainlink.Request memory request = buildChainlinkRequest(jobId, this, this.fulfill.selector);
+        Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), this.fulfillRebase.selector);
         if(lastRebaseTimestampSec == 0){
             lastRebaseTimestampSec = block.timestamp;
         }
@@ -77,7 +78,7 @@ contract Orchestrator is ChainlinkClient {
     
     function rebaseRequest() private returns (bytes32 requestId) 
     {
-        Chainlink.Request memory request = buildChainlinkRequest(jobId, this, this.fulfillRebase.selector);
+        Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), this.fulfillRebase.selector);
         require(lastRebaseTimestampSec != 0, "lastRebaseTimestampSec not initialized");
         lastRebaseTimestampSec = lastRebaseTimestampSec + defaultDuration;
         request.addUint("until", lastRebaseTimestampSec);
@@ -87,7 +88,7 @@ contract Orchestrator is ChainlinkClient {
     // must not be called before calling rebaseRequest
     function coinPriceRequest() private returns (bytes32 requestId) 
     {
-        Chainlink.Request memory request = buildChainlinkRequest(jobId, this, this.fulfillPriceQuery.selector);
+        Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), this.fulfillPriceQuery.selector);
         require(lastRebaseTimestampSec != 0, "lastRebaseTimestampSec not initialized");
         // schedules coin price retrieval defaultCoinPriceLead seconds before rebase
         request.addUint("until", lastRebaseTimestampSec - defaultCoinPriceLead);

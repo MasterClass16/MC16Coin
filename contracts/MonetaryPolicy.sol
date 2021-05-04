@@ -1,4 +1,5 @@
-pragma solidity ^0.7.6;
+pragma solidity ^0.6.8;
+// SPDX-License-Identifier: MIT
 
 import "./SafeMath.sol";
 import "./SafeMathInt.sol";
@@ -6,7 +7,7 @@ import "./UInt256Lib.sol";
 
 
 interface ICoinPriceOracle {
-   function price() external returns (uint256 price)  
+   function price() external returns (uint256 _price);  
 }
 
 interface IRebaseToken {
@@ -29,6 +30,7 @@ contract MonetaryPolicy  {
     );
 
     ICoinPriceOracle public coinPrice;
+    address owner_;
     IRebaseToken public rebaseToken;
 
     // If the current exchange rate is within this fractional distance from the target, no supply
@@ -95,13 +97,13 @@ contract MonetaryPolicy  {
 
         epoch = epoch.add(1);
 
-        uint256 exchangeRate  = coinPriceOracle.price();
+        uint256 exchangeRate  = coinPrice.price();
 
         if (exchangeRate > MAX_RATE) {
             exchangeRate = MAX_RATE;
         }
 
-        int256 supplyDelta = computeSupplyDelta(exchangeRate, targetRate);
+        int256 supplyDelta = computeSupplyDelta(exchangeRate, 1);
 
         // Apply the Dampening factor.
         supplyDelta = supplyDelta.div(rebaseLag.toInt256Safe());
@@ -170,12 +172,12 @@ contract MonetaryPolicy  {
     }
 
     constructor() public {
-        owner_ = msg.sender
+        owner_ = msg.sender;
     }
 
     function initialize(
-        IRebaseToken rebaseToken_,
-    ) public initializer {
+        IRebaseToken rebaseToken_
+    ) public {
 
         // deviationThreshold = 0.05e18 = 5e16
         deviationThreshold = 5 * 10**(DECIMALS - 2);
