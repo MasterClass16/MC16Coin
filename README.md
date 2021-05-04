@@ -23,12 +23,17 @@
 To get a local copy up and running follow these simple example steps.
 
 - Fork the repository
-- Git clone https://github.com/your-username/bnbCodedClass
+- Git clone https://github.com/your-username/MC16Coin
 - git checkout -b branch name
-- git remote add upstream https://github.com/cloud9n/bnbCodedClass
+- yarn install
+- git remote add upstream https://github.com/MasterClass16/MC16Coin
 - git pull upstream develop
 - git commit -m "commit message"
 - git push -u origin HEAD
+
+## Compiling
+
+    $ npx hardhat compile
 
 ## Author(s)
 

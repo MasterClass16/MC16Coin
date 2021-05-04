@@ -1,7 +1,9 @@
-pragma solidity ^0.7.6;
+pragma solidity ^0.6.8;
+// SPDX-License-Identifier: MIT
 
 import "./SafeMath.sol";
 import "./SafeMathInt.sol";
+
 
 contract RebaseToken {
     string public name = "ALPHONE";
@@ -45,7 +47,7 @@ contract RebaseToken {
         _;
     }
 
-    constructor() public  {
+    constructor() public {
         owner_ = msg.sender;
     }
 
